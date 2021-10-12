@@ -65,12 +65,16 @@
         (js-delete response-js "chats")
         (fx/merge cofx
                   (process-next response-js sync-handler)
-                  (models.chat/ensure-chats (map #(-> %
-                                                      (data-store.chats/<-rpc)
+                  (models.chat/ensure-chats (map #(let [chat (data-store.chats/<-rpc %)]
+                                                    (cond-> chat
                                                       ;; We dissoc this fields as they are handled by status-react and
                                                       ;; not status-go, as there might be requests in-flight that change
                                                       ;; this value
-                                                      (dissoc :unviewed-messages-count :unviewed-mentions-count))
+                                                      (not (zero? (:unviewed-messages-count chat)))
+                                                      (dissoc :unviewed-messages-count)
+
+                                                      (not (zero? (:unviewed-mentions-count chat)))
+                                                      (dissoc :unviewed-mentions-count)))
                                                  (types/js->clj chats)))))
 
       (seq messages)
