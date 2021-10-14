@@ -17,7 +17,9 @@
             [status-im.ui.components.profile-header.view :as profile-header]
             [status-im.ui.screens.profile.user.edit-picture :as edit]
             [status-im.utils.utils :as utils]
-            [status-im.ethereum.stateofus :as stateofus])
+            [status-im.ethereum.stateofus :as stateofus]
+            [status-im.qr-scanner.core :as qr-scanner]
+            [status-im.node.core :as core])
   (:require-macros [status-im.utils.views :as views]))
 
 (views/defview share-chat-key []
@@ -55,6 +57,8 @@
           :accessibility-label :share-my-contact-code-button}
          (i18n/label :t/share-link)]]])))
 
+;; {:keys [multiaccount :networks/networks :networks/current-network]
+;;  :as db}
 (defn content []
   (let [{:keys [preferred-name
                 mnemonic
@@ -62,7 +66,8 @@
         @(re-frame/subscribe [:multiaccount])
         active-contacts-count @(re-frame/subscribe [:contacts/active-count])
         chain @(re-frame/subscribe [:chain-keyword])
-        registrar (stateofus/get-cached-registrar chain)]
+        registrar (stateofus/get-cached-registrar chain)
+        wakuv2-enabled  @(re-frame/subscribe [:waku/v2-flag])]
     [:<>
      [quo/list-item
       (cond-> {:title                (or (when registrar preferred-name)
@@ -140,6 +145,15 @@
        :accessibility-label :advanced-button
        :chevron             true
        :on-press            #(re-frame/dispatch [:navigate-to :advanced-settings])}]
+     (when wakuv2-enabled
+       [quo/list-item
+        {:icon                :main-icons/settings-advanced
+         :title               "Wallet Connect 2.0"
+         :accessibility-label :wallet-connect-button
+         :chevron             true
+         :on-press            #(re-frame/dispatch [::qr-scanner/scan-code
+                                                   {:title   (i18n/label :t/new-chat)
+                                                    :handler :contact/qr-code-scanned}])}])
      [quo/list-item
       {:icon                :main-icons/help
        :title               (i18n/label :t/need-help)
