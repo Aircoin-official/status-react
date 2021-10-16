@@ -211,6 +211,8 @@ PODS:
     - React-Core
   - react-native-netinfo (4.7.0):
     - React
+  - react-native-randombytes (3.6.1):
+    - React-Core
   - react-native-safe-area-context (2.0.0):
     - React
   - react-native-shake (3.4.0):
@@ -223,6 +225,8 @@ PODS:
     - React
   - react-native-status-keycard (2.5.35):
     - Keycard
+    - React
+  - react-native-udp (2.7.0):
     - React
   - react-native-webview (11.3.0):
     - React-Core
@@ -326,6 +330,8 @@ PODS:
     - React
   - RNLanguages (3.0.2):
     - React
+  - RNOS (1.2.6):
+    - React
   - RNPermissions (2.1.5):
     - React
   - RNReactNativeHapticFeedback (1.9.0):
@@ -370,6 +376,8 @@ PODS:
   - SQLCipher/standard (3.4.2):
     - SQLCipher/common
   - SSZipArchive (2.4.2)
+  - TcpSockets (3.3.2):
+    - React
   - TOCropViewController (2.6.0)
   - TouchID (4.4.1):
     - React
@@ -404,12 +412,14 @@ DEPENDENCIES:
   - react-native-image-resizer (from `../node_modules/react-native-image-resizer`)
   - react-native-mail (from `../node_modules/react-native-mail`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - react-native-randombytes (from `../node_modules/react-native-randombytes`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-shake (from `../node_modules/react-native-shake`)
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
   - react-native-splash-screen (from `../node_modules/react-native-splash-screen`)
   - react-native-status (from `../modules/react-native-status`)
   - react-native-status-keycard (from `../node_modules/react-native-status-keycard`)
+  - react-native-udp (from `../node_modules/react-native-udp`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
   - React-RCTAnimation (from `../node_modules/react-native/Libraries/NativeAnimation`)
@@ -434,6 +444,7 @@ DEPENDENCIES:
   - RNImageCropPicker (from `../node_modules/react-native-image-crop-picker`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLanguages (from `../node_modules/react-native-languages`)
+  - RNOS (from `../node_modules/react-native-os`)
   - RNPermissions (from `../node_modules/react-native-permissions`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -442,6 +453,7 @@ DEPENDENCIES:
   - secp256k1 (from `https://github.com/status-im/secp256k1.swift.git`)
   - SQLCipher (~> 3.0)
   - SSZipArchive
+  - TcpSockets (from `../node_modules/react-native-tcp`)
   - TouchID (from `../node_modules/react-native-touch-id`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -506,6 +518,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-mail"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
+  react-native-randombytes:
+    :path: "../node_modules/react-native-randombytes"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-shake:
@@ -518,6 +532,8 @@ EXTERNAL SOURCES:
     :path: "../modules/react-native-status"
   react-native-status-keycard:
     :path: "../node_modules/react-native-status-keycard"
+  react-native-udp:
+    :path: "../node_modules/react-native-udp"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-RCTActionSheet:
@@ -566,6 +582,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNLanguages:
     :path: "../node_modules/react-native-languages"
+  RNOS:
+    :path: "../node_modules/react-native-os"
   RNPermissions:
     :path: "../node_modules/react-native-permissions"
   RNReactNativeHapticFeedback:
@@ -579,6 +597,8 @@ EXTERNAL SOURCES:
   secp256k1:
     :git: https://github.com/status-im/secp256k1.swift.git
     :submodules: true
+  TcpSockets:
+    :path: "../node_modules/react-native-tcp"
   TouchID:
     :path: "../node_modules/react-native-touch-id"
   Yoga:
@@ -622,12 +642,14 @@ SPEC CHECKSUMS:
   react-native-image-resizer: 2f1577efa3bc762597681f530c8e8d05ce0ceeb3
   react-native-mail: 8fdcd3aef007c33a6877a18eb4cf7447a1d4ce4a
   react-native-netinfo: ddaca8bbb9e6e914b1a23787ccb879bc642931c9
+  react-native-randombytes: 421f1c7d48c0af8dbcd471b0324393ebf8fe7846
   react-native-safe-area-context: 60f654e00b6cc416573f6d5dbfce3839958eb57a
   react-native-shake: de052eaa3eadc4a326b8ddd7ac80c06e8d84528c
   react-native-slider: 12bd76d3d568c9c5500825db54123d44b48e4ad4
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-status: 45dbf1302ce3c258b459dfab137cd1c2c68c295d
   react-native-status-keycard: de55c01648d24ff7c17a77f3aa29a0421f44143c
+  react-native-udp: ff9d13e523f2b58e6bc5d4d32321ac60671b5dc9
   react-native-webview: af9990b21a9aeafa8e8347746eb4116c0de086af
   React-RCTActionSheet: 89a0ca9f4a06c1f93c26067af074ccdce0f40336
   React-RCTAnimation: 1bde3ecc0c104c55df246eda516e0deb03c4e49b
@@ -652,6 +674,7 @@ SPEC CHECKSUMS:
   RNImageCropPicker: 35a3ceb837446fa11547704709bb22b5fac6d584
   RNKeychain: 216f37338fcb9e5c3a2530f1e3295f737a690cb1
   RNLanguages: 962e562af0d34ab1958d89bcfdb64fafc37c513e
+  RNOS: 6f2f9a70895bbbfbdad7196abd952e7b01d45027
   RNPermissions: ad71dd4f767ec254f2cd57592fbee02afee75467
   RNReactNativeHapticFeedback: 2566b468cc8d0e7bb2f84b23adc0f4614594d071
   RNReanimated: 70f662b5232dd5d19ccff581e919a54ea73df51c
@@ -660,6 +683,7 @@ SPEC CHECKSUMS:
   secp256k1: f61d67e6fdcb85fd727acf1bf35ace6036db540c
   SQLCipher: f9fcf29b2e59ced7defc2a2bdd0ebe79b40d4990
   SSZipArchive: e7b4f3d9e780c2acc1764cd88fbf2de28f26e5b2
+  TcpSockets: 14306fb79f9750ea7d2ddd02d8bed182abb01797
   TOCropViewController: 3105367e808b7d3d886a74ff59bf4804e7d3ab38
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
   Yoga: 4bd86afe9883422a7c4028c00e34790f560923d6
