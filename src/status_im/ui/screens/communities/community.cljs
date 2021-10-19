@@ -163,11 +163,14 @@
 
 (defn categories-accordion [community-id chats categories edit data]
   [rn/view {:padding-bottom 8}
-   (for [{:keys [name id]} (vals categories)]
+   (for [{:keys [name id state]} (vals categories)]
      ^{:key (str "cat" name id)}
      [:<>
       [accordion/section
-       {:opened   edit
+       {:on-open  #(>evt [::communities/store-category-state community-id id true])
+        :on-close #(>evt [::communities/store-category-state community-id id false])
+        :default  state
+        :opened   edit
         :disabled edit
         :title    [rn/view styles/category-item
                    (if edit

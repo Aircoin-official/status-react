@@ -586,3 +586,39 @@
     (fx/merge cofx
               (navigation/navigate-back)
               (remove-chat-from-category community-id id categoryID))))
+
+(defn category-hash [community-id category-id]
+  (hash (str community-id category-id)))
+
+(fx/defn store-category-state
+  {:events [::store-category-state]}
+  [_ community-id category-id state-open?]
+  {::async-storage/set! {(category-hash community-id category-id) state-open?}})
+
+(fx/defn update-category-states-in-db
+  {:events [::category-states-loaded]}
+  [{:keys [db]} community-id states]
+  (let [categories-old (get-in db [:communities community-id :categories])
+        categories     (get
+                        (reduce (fn [prev-map category]
+                                  (let [id    (get category 0)
+                                        hash  (category-hash community-id id)
+                                        state (get states hash)]
+                                    (assoc-in prev-map [:categories id :state] state)))
+                                {:categories categories-old}
+                                categories-old)
+                        :categories)]
+    {:db (update-in db [:communities community-id :categories] merge categories)}))
+
+(fx/defn load-category-states
+  {:events [::load-category-states]}
+  [{:keys [db]} community-id]
+  (let [categories (get-in db [:communities community-id :categories])
+        keys       (reduce (fn [prev-list category]
+                             (conj prev-list
+                                   (category-hash community-id (get category 0))))
+                           []
+                           categories)]
+    {::async-storage/get {:keys keys
+                          :cb   #(re-frame/dispatch
+                                  [::category-states-loaded community-id %])}}))
