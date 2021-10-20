@@ -20,7 +20,8 @@
             [status-im.ethereum.stateofus :as stateofus]
             [status-im.qr-scanner.core :as qr-scanner]
             [status-im.node.core :as core]
-            [status-im.utils.wallet-connect :as wallet-connect])
+            [status-im.utils.wallet-connect :as wallet-connect]
+            [status-im.wallet.core :as wallet])
   (:require-macros [status-im.utils.views :as views]))
 
 (views/defview share-chat-key []
@@ -58,7 +59,7 @@
           :accessibility-label :share-my-contact-code-button}
          (i18n/label :t/share-link)]]])))
 
-(defn wallet-connect-init [] (wallet-connect/init #(println "success " %) #(println "error " %)))
+(defn wallet-connect-init [] (wallet-connect/init #(re-frame/dispatch [:wallet/wallet-connect-client-init %]) #(println "error " %)))
 
 ;; {:keys [multiaccount :networks/networks :networks/current-network]
 ;;  :as db}

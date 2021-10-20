@@ -29,7 +29,8 @@
             [status-im.popover.core :as popover.core]
             [status-im.signing.eip1559 :as eip1559]
             [status-im.signing.gas :as signing.gas]
-            [clojure.set :as clojure.set]))
+            [clojure.set :as clojure.set]
+            [status-im.utils.wallet-connect :as wallet-connect]))
 
 (defn get-balance
   [{:keys [address on-success on-error]}]
@@ -1043,3 +1044,12 @@
   [{:keys [db]} enabled?]
   {::async-storage/set! {:transactions-management-enabled? enabled?}
    :db (assoc db :wallet/transactions-management-enabled? enabled?)})
+
+(defn subscribe-to-events [wallet-connect-client]
+  (println "START LISTENING WALLET CONNECT EVENTS HERE" wallet-connect-client))
+
+(fx/defn wallet-connect-client-initate
+  {:events [:wallet/wallet-connect-client-init]}
+  [{:keys [db]} client]
+  (subscribe-to-events client)
+  {:db (assoc db :wallet/wallet-connect-client client)})
