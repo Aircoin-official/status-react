@@ -3,6 +3,7 @@
             [status-im.i18n.i18n :as i18n]
             [status-im.ui.screens.profile.visibility-status.styles :as styles]
             [re-frame.core :as re-frame]
+            [status-im.utils.handlers :refer [<sub]]
             [status-im.utils.datetime :as datetime]))
 
 ;; Specs:
@@ -58,10 +59,12 @@
        [:visibility-status-updates/countdown-for-online-user public-key clock time-left]))
     (:color (get visibility-status-type-data status-type))))
 
-(defn icon-visibility-status-dot [public-key container-size identicon?]
-  (let [visibility-status-update @(re-frame/subscribe
-                                   [:visibility-status-updates/visibility-status-update
-                                    public-key])
+(defn icon-visibility-status-dot [public-key container-size identicon? my-icon?]
+  (let [visibility-status-update (if my-icon?
+                                   (<sub [:multiaccount/current-user-status])
+                                   (<sub
+                                    [:visibility-status-updates/visibility-status-update
+                                     public-key]))
         size                     (/ container-size 4)
         margin                   (if identicon? (/ size 6) (/ size 7))
         dot-color                (dot-color visibility-status-update)]

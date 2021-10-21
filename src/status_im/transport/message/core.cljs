@@ -44,6 +44,7 @@
         ^js pin-messages               (.-pinMessages response-js)
         ^js removed-messages           (.-removedMessages response-js)
         ^js visibility-status-updates  (.-statusUpdates response-js)
+        ^js current-visibility-status  (.-currentStatus response-js)
         sync-handler                   (when-not process-async process-response)]
     (cond
 
@@ -159,7 +160,15 @@
         (fx/merge cofx
                   (process-next response-js sync-handler)
                   (models.visibility-status-updates/handle-visibility-status-updates
-                   visibility-status-updates-clj))))))
+                   visibility-status-updates-clj)))
+
+      (some? current-visibility-status)
+      (let [current-visibility-status-clj (types/js->clj current-visibility-status)]
+        (js-delete response-js "currentStatus")
+        (fx/merge cofx
+                  (process-next response-js sync-handler)
+                  (models.visibility-status-updates/sync-visibility-status-update
+                   current-visibility-status-clj))))))
 
 (defn group-by-and-update-unviewed-counts
   "group messages by current chat, profile updates, transactions and update unviewed counters in db for not curent chats"

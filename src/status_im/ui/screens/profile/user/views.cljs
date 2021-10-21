@@ -190,5 +190,6 @@
                               :monospace (not ens-verified)
                               :subtitle  (if (and ens-verified public-key)
                                            (gfy/generate-gfy public-key)
-                                           (utils/get-shortened-address public-key))})}
+                                           (utils/get-shortened-address public-key))
+                              :my-icon?  true})}
         [content]]])))

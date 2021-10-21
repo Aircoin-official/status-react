@@ -44,7 +44,8 @@
     [react/view (:default-chat-icon styles)
      [react/text {:style (:default-chat-icon-text styles)} emoji]]))
 
-(defn profile-photo-plus-dot-view [{:keys [public-key photo-container photo-path]}]
+(defn profile-photo-plus-dot-view
+  [{:keys [public-key photo-container photo-path my-icon?]}]
   (let [photo-path      (if (nil? photo-path)
                           @(re-frame.core/subscribe [:chats/photo-path public-key])
                           photo-path)
@@ -53,7 +54,7 @@
         size            (:width photo-container)
         identicon?      (when photo-path (profile.db/base64-png? photo-path))
         dot-styles      (visibility-status-utils/icon-visibility-status-dot
-                         public-key size identicon?)]
+                         public-key size identicon? my-icon?)]
     [react/view {:style               photo-container
                  :accessibility-label :profile-photo}
      [photos/photo photo-path {:size size}]
@@ -149,7 +150,8 @@
       (if-not (string/blank? photo-path)
         [photos/photo photo-path styles]))))
 
-(defn profile-icon-view [photo-path name color emoji edit? size override-styles public-key]
+(defn profile-icon-view
+  [photo-path name color emoji edit? size override-styles public-key my-icon?]
   (let [styles (merge {:container              {:width size :height size}
                        :size                   size
                        :chat-icon              styles/chat-icon-profile
@@ -161,7 +163,8 @@
      (if (and photo-path (seq photo-path))
        [profile-photo-plus-dot-view {:photo-path      photo-path
                                      :public-key      public-key
-                                     :photo-container (:container styles)}]
+                                     :photo-container (:container styles)
+                                     :my-icon?        my-icon?}]
        (if (string/blank? emoji)
          [default-chat-icon name styles]
          [emoji-chat-icon emoji styles]))

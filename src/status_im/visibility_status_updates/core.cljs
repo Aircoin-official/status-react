@@ -146,10 +146,23 @@
            send-visibility-status-updates?
            (= status-type constants/visibility-status-inactive))
       {:dispatch-later
-       [{:ms 1000
+       [{:ms 100
          :dispatch
          [:visibility-status-updates/update-visibility-status status-type]}
-        {:ms 2000
+        {:ms 1000
          :dispatch
          [:visibility-status-updates/send-visibility-status-updates? false]}]
        :db (assoc-in db [:multiaccount :send-status-updates?] false)})))
+
+(fx/defn sync-visibility-status-update
+  [{:keys [db]} visibility-status-update-received]
+  (let [my-current-status           (get-in db [:multiaccount :current-user-status])
+        {:keys [status-type clock]} (visibility-status-updates-store/<-rpc
+                                     visibility-status-update-received)]
+    (when (or
+           (nil? my-current-status)
+           (> clock (:clock my-current-status)))
+      {:db (update-in db [:multiaccount :current-user-status]
+                      merge {:clock clock :status-type status-type})
+       :dispatch [:visibility-status-updates/send-visibility-status-updates?
+                  (not= status-type constants/visibility-status-inactive)]})))
