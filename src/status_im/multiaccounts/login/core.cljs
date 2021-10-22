@@ -38,7 +38,7 @@
             [status-im.navigation :as navigation]
             [status-im.signing.eip1559 :as eip1559]
             [status-im.data-store.chats :as data-store.chats]
-            [status-im.visibility-status-updates.core :as visibility-status-updates]))
+            [status-im.data-store.visibility-status-updates :as visibility-status-updates-store]))
 
 (re-frame/reg-fx
  ::initialize-communities-enabled
@@ -340,7 +340,7 @@
               (multiaccounts/get-profile-picture)
               (multiaccounts/switch-preview-privacy-mode-flag)
               (link-preview/request-link-preview-whitelist)
-              (visibility-status-updates/initialize-visibility-status-updates))))
+              (visibility-status-updates-store/fetch-visibility-status-updates-rpc))))
 
 (defn get-new-auth-method [auth-method save-password?]
   (when save-password?

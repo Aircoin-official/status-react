@@ -792,10 +792,10 @@
          false))))
 
 (re-frame/reg-sub
- :multiaccount/current-user-status
+ :multiaccount/current-user-visibility-status
  :<- [:multiaccount]
- (fn [{:keys [current-user-status]}]
-   current-user-status))
+ (fn [{:keys [current-user-visibility-status]}]
+   current-user-visibility-status))
 
 ;;CHAT ==============================================================================================================
 

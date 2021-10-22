@@ -1,17 +1,12 @@
 (ns status-im.ui.screens.profile.visibility-status.styles
   (:require [quo.design-system.colors :as colors]))
 
-(def color-error "#FA6565")
-(def color-online "#7CDA00")
-(def color-dnd "#FA6565")
-(def color-inactive "#939BA1")
-
 (defn visibility-status-button-container []
   {:background-color       (:interactive-02 @colors/theme)
    :margin-left            16
    :border-radius          16
    :border-top-left-radius 4
-   :align-self             "flex-start"
+   :align-self             :flex-start
    :flex-direction         "row"
    :align-items            "center"
    :justify-content        "center"
@@ -24,7 +19,7 @@
    :height           size
    :border-radius    (/ size 2)
    :border-width     1
-   :border-color     "#FFFFFF"})
+   :border-color     colors/white})
 
 (defn visibility-status-profile-dot [color size border-width margin-left]
   (merge (visibility-status-dot color size)
@@ -54,7 +49,7 @@
    :border-radius          16
    :border-top-left-radius 4
    :justify-content        "center"
-   :align-self             "flex-start"
+   :align-self             :flex-start
    :left                    16
    :top                    -76
    :padding-bottom          6

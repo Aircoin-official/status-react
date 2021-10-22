@@ -37,12 +37,12 @@
     [:<>
      (when automatic?
        [rn/view {:style (styles/visibility-status-profile-dot
-                         styles/color-inactive size border-width 6)}])
+                         colors/color-inactive size border-width 6)}])
      [rn/view {:style (styles/visibility-status-profile-dot
                        color size border-width margin-left)}]]))
 
 (defn visibility-status-button [on-press props]
-  (let [{:keys [status-type]} (<sub [:multiaccount/current-user-status])
+  (let [{:keys [status-type]} (<sub [:multiaccount/current-user-visibility-status])
         status-type           (if (nil? status-type)
                                 (do
                                   (dispatch-visibility-status-update

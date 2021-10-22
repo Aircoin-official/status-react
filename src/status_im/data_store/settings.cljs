@@ -52,4 +52,4 @@
       (update :custom-bootnodes rpc->custom-bootnodes)
       (update :custom-bootnodes-enabled? rpc->custom-bootnodes)
       (update :currency keyword)
-      (update :current-user-status visibility-status-updates/<-rpc)))
+      (visibility-status-updates/<-rpc-settings)))

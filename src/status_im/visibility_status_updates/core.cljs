@@ -1,104 +1,107 @@
 (ns status-im.visibility-status-updates.core
-  (:require [re-frame.core :as re-frame]
-            [status-im.data-store.visibility-status-updates :as visibility-status-updates-store]
+  (:require [status-im.data-store.visibility-status-updates :as visibility-status-updates-store]
             [status-im.ethereum.json-rpc :as json-rpc]
             [status-im.utils.fx :as fx]
             [status-im.constants :as constants]
             [status-im.multiaccounts.update.core :as multiaccounts.update]
             [status-im.utils.datetime :as datetime]))
 
+(defn valid-status-type? [status-type]
+  (some #(= status-type %)
+        (list constants/visibility-status-always-online
+              constants/visibility-status-inactive
+              constants/visibility-status-automatic)))
+
 (fx/defn load-visibility-status-updates
-  {:events [::visibility-status-updates-loaded]}
+  {:events [:visibility-status-updates/visibility-status-updates-loaded]}
   [{:keys [db]} visibility-status-updates-loaded]
   (let [{:keys [visibility-status-updates]}
-        (reduce (fn [prev-map visibility-status-update-loaded]
+        (reduce (fn [acc visibility-status-update-loaded]
                   (let [{:keys [public-key] :as visibility-status-update}
                         (visibility-status-updates-store/<-rpc
                          visibility-status-update-loaded)]
-                    (assoc-in prev-map [:visibility-status-updates public-key]
+                    (assoc-in acc [:visibility-status-updates public-key]
                               visibility-status-update)))
-                {:visibility-status-updates {}}
-                visibility-status-updates-loaded)]
+                {} visibility-status-updates-loaded)]
     {:db (assoc db :visibility-status-updates visibility-status-updates)}))
 
 (defn handle-my-visibility-status-updates
-  [prev-map my-current-status clock visibility-status-update]
+  [acc my-current-status clock visibility-status-update]
   (let [status-type (:status-type visibility-status-update)]
-    (when (or
-           (nil? my-current-status)
-           (> clock (:clock my-current-status)))
-      (-> prev-map
-          (update :current-user-status
+    (if (and (valid-status-type? status-type)
+             (or
+              (nil? my-current-status)
+              (> clock (:clock my-current-status))))
+      (-> acc
+          (update :current-user-visibility-status
                   merge {:clock clock :status-type status-type})
           (assoc :dispatch [:visibility-status-updates/send-visibility-status-updates?
-                            (not= status-type constants/visibility-status-inactive)])))))
+                            (not= status-type constants/visibility-status-inactive)]))
+      acc)))
 
 (defn handle-other-visibility-status-updates
-  [prev-map public-key clock visibility-status-update]
-  (let [visibility-status-update-old
-        (get-in prev-map [:visibility-status-updates public-key])]
-    (when (or
-           (nil? visibility-status-update-old)
-           (> clock (:clock visibility-status-update-old)))
-      (assoc-in prev-map [:visibility-status-updates public-key]
-                visibility-status-update))))
+  [acc public-key clock visibility-status-update]
+  (let [status-type (:status-type visibility-status-update)
+        visibility-status-update-old
+        (get-in acc [:visibility-status-updates public-key])]
+    (if (and (valid-status-type? status-type)
+             (or
+              (nil? visibility-status-update-old)
+              (> clock (:clock visibility-status-update-old))))
+      (assoc-in acc [:visibility-status-updates public-key]
+                visibility-status-update)
+      acc)))
 
 (fx/defn handle-visibility-status-updates
   [{:keys [db]} visibility-status-updates-received]
   (let [visibility-status-updates-old (if (nil? (:visibility-status-updates db)) {}
                                           (:visibility-status-updates db))
-        my-public-key                 (get-in db [:multiaccount :public-key])
-        my-current-status             (get-in db [:multiaccount :current-user-status])
-        {:keys [visibility-status-updates current-user-status dispatch]}
-        (reduce (fn [prev-map visibility-status-update-received]
+        my-public-key                 (get-in
+                                       db [:multiaccount :public-key])
+        my-current-status             (get-in
+                                       db [:multiaccount :current-user-visibility-status])
+        {:keys [visibility-status-updates current-user-visibility-status dispatch]}
+        (reduce (fn [acc visibility-status-update-received]
                   (let [{:keys [public-key clock] :as visibility-status-update}
                         (visibility-status-updates-store/<-rpc
                          visibility-status-update-received)]
                     (if (= public-key my-public-key)
                       (handle-my-visibility-status-updates
-                       prev-map my-current-status clock visibility-status-update)
+                       acc my-current-status clock visibility-status-update)
                       (handle-other-visibility-status-updates
-                       prev-map public-key clock visibility-status-update))))
+                       acc public-key clock visibility-status-update))))
                 {:visibility-status-updates      visibility-status-updates-old
-                 :current-user-status            my-current-status
-                 :dispatch                       nil}
+                 :current-user-visibility-status my-current-status}
                 visibility-status-updates-received)]
     (merge {:db (-> db
                     (update-in [:visibility-status-updates]
                                merge visibility-status-updates)
-                    (update-in [:multiaccount :current-user-status]
-                               merge current-user-status))}
+                    (update-in [:multiaccount :current-user-visibility-status]
+                               merge current-user-visibility-status))}
            (when dispatch {:dispatch dispatch}))))
-
-(fx/defn initialize-visibility-status-updates [cofx]
-  (visibility-status-updates-store/fetch-visibility-status-updates-rpc
-   cofx #(re-frame/dispatch [::visibility-status-updates-loaded %])))
 
 (fx/defn visibility-status-option-pressed
   {:events [:visibility-status-updates/visibility-status-option-pressed]}
   [{:keys [db]} status-type]
-  (let [peers-count              (:peers-count db)
-        events-to-dispatch-later (atom [])]
-    (swap! events-to-dispatch-later conj
-           {:ms 10 :dispatch
-            [:visibility-status-updates/update-visibility-status status-type]})
-    (when
-     (and
-      (= status-type constants/visibility-status-inactive)
-      (> peers-count 0))
-      ;; Disable broadcasting further updates
-      (swap! events-to-dispatch-later conj
-             {:ms 1000
-              :dispatch
-              [:visibility-status-updates/send-visibility-status-updates? false]}))
+  (let [events-to-dispatch-later
+        (cond-> [{:ms 10 :dispatch
+                  [:visibility-status-updates/update-visibility-status
+                   status-type]}]
+          (and
+           (= status-type constants/visibility-status-inactive)
+           (> (:peers-count db) 0))
+          ;; Disable broadcasting further updates
+          (conj {:ms 1000
+                 :dispatch
+                 [:visibility-status-updates/send-visibility-status-updates? false]}))]
     ;; Enable broadcasting for current broadcast
     {:dispatch        [:visibility-status-updates/send-visibility-status-updates? true]
-     :dispatch-later  @events-to-dispatch-later}))
+     :dispatch-later  events-to-dispatch-later}))
 
 (fx/defn update-visibility-status
   {:events [:visibility-status-updates/update-visibility-status]}
   [{:keys [db] :as cofx} status-type]
-  {:db (update-in db [:multiaccount :current-user-status]
+  {:db (update-in db [:multiaccount :current-user-visibility-status]
                   merge {:status-type status-type
                          :clock       (datetime/timestamp-sec)})
    ::json-rpc/call [{:method     "wakuext_setUserStatus"
@@ -140,29 +143,27 @@
   (let [send-visibility-status-updates?
         (get-in db [:multiaccount :send-status-updates?])
         status-type
-        (get-in db [:multiaccount :current-user-status :status-type])]
+        (get-in db [:multiaccount :current-user-visibility-status :status-type])]
     (when (and
            (> peers-count 0)
            send-visibility-status-updates?
            (= status-type constants/visibility-status-inactive))
-      {:dispatch-later
-       [{:ms 100
-         :dispatch
-         [:visibility-status-updates/update-visibility-status status-type]}
-        {:ms 1000
-         :dispatch
-         [:visibility-status-updates/send-visibility-status-updates? false]}]
+      {:dispatch [:visibility-status-updates/update-visibility-status status-type]
+       :dispatch-later [{:ms 1000
+                         :dispatch
+                         [:visibility-status-updates/send-visibility-status-updates? false]}]
        :db (assoc-in db [:multiaccount :send-status-updates?] false)})))
 
 (fx/defn sync-visibility-status-update
   [{:keys [db]} visibility-status-update-received]
-  (let [my-current-status           (get-in db [:multiaccount :current-user-status])
+  (let [my-current-status           (get-in db [:multiaccount :current-user-visibility-status])
         {:keys [status-type clock]} (visibility-status-updates-store/<-rpc
                                      visibility-status-update-received)]
-    (when (or
-           (nil? my-current-status)
-           (> clock (:clock my-current-status)))
-      {:db (update-in db [:multiaccount :current-user-status]
+    (when (and (valid-status-type? status-type)
+               (or
+                (nil? my-current-status)
+                (> clock (:clock my-current-status))))
+      {:db (update-in db [:multiaccount :current-user-visibility-status]
                       merge {:clock clock :status-type status-type})
        :dispatch [:visibility-status-updates/send-visibility-status-updates?
                   (not= status-type constants/visibility-status-inactive)]})))
