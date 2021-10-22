@@ -158,8 +158,8 @@
          :on-press            #(do
                                  (wallet-connect-init)
                                  (re-frame/dispatch [::qr-scanner/scan-code
-                                                   {:title   (i18n/label :t/new-chat)
-                                                    :handler :contact/qr-code-scanned}]))}])
+                                                   {:title   "Wallet Connect 2.0"
+                                                    :handler :wallet-connect/qr-code-scanned}]))}])
      [quo/list-item
       {:icon                :main-icons/help
        :title               (i18n/label :t/need-help)

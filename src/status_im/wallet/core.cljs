@@ -30,7 +30,8 @@
             [status-im.signing.eip1559 :as eip1559]
             [status-im.signing.gas :as signing.gas]
             [clojure.set :as clojure.set]
-            [status-im.utils.wallet-connect :as wallet-connect]))
+            [status-im.utils.wallet-connect :as wallet-connect]
+            [status-im.ui.components.react :as react]))
 
 (defn get-balance
   [{:keys [address on-success on-error]}]
@@ -1045,8 +1046,35 @@
   {::async-storage/set! {:transactions-management-enabled? enabled?}
    :db (assoc db :wallet/transactions-management-enabled? enabled?)})
 
+(defn proposal-handler [request-event]
+  (println "EVENT - SESSION PROPOSAL" (js->clj request-event))
+  ;; show proper UI for accepting or rejecting the session proposal
+  (re-frame/dispatch [:bottom-sheet/show-sheet :recover-sheet]))
+
+(defn created-handler [request-event]
+  (println "EVENT - SESSION CREATED" (js->clj request-event)))
+
+(defn deleted-handler [request-event]
+  (println "EVENT - SESSION PROPOSAL" (js->clj request-event)))
+
+(defn request-handler [request-event]
+  (println "EVENT - SESSION PROPOSAL" (js->clj request-event)))
+
 (defn subscribe-to-events [wallet-connect-client]
-  (println "START LISTENING WALLET CONNECT EVENTS HERE" wallet-connect-client))
+  (.on wallet-connect-client (wallet-connect/session-request-event) request-handler)
+  (.on wallet-connect-client (wallet-connect/session-created-event) created-handler)
+  (.on wallet-connect-client (wallet-connect/session-deleted-event) deleted-handler)
+  (.on wallet-connect-client (wallet-connect/session-proposal-event) proposal-handler))
+
+(fx/defn qr-code-scanned
+  {:events [:wallet-connect/qr-code-scanned]}
+  [{:keys [db]} data opts]
+  (let [client (get db :wallet/wallet-connect-client)
+        ;; used for testing purposes, remove later and use data variable instead
+        uri "wc:6caef4d8a511609d607fbb180adcaac42a94520c3f3c328496a1b1c6f39a36d2@2?controller=false&publicKey=5b669b06fdac438f7be7dec2f23f0a1b2d3e651eced86e67cb6b18c455f8ba46&relay=%7B%22protocol%22%3A%22waku%22%7D"]
+    (.pair client (clj->js {:uri uri}))
+    {:dispatch [:navigate-back]
+     :db (assoc db :wallet/wallet-connect-scanned-uri data)}))
 
 (fx/defn wallet-connect-client-initate
   {:events [:wallet/wallet-connect-client-init]}

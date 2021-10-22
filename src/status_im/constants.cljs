@@ -162,3 +162,21 @@
 (def ^:const activity-center-notification-type-private-group-chat 2)
 (def ^:const activity-center-notification-type-mention 3)
 (def ^:const activity-center-notification-type-reply 4)
+
+(def ^:const default-main-chains [
+  "eip155:1"
+  "eip155:10"
+  "eip155:100"
+  "eip155:137"
+  "eip155:42161"
+  "eip155:42220"
+  "cosmos:cosmoshub-4"
+])
+
+(def ^:const default-test-chains [
+  "eip155:42"
+  "eip155:69"
+  "eip155:80001"
+  "eip155:421611"
+  "eip155:44787"
+])
