@@ -42,8 +42,9 @@
                        color size border-width margin-left)}]]))
 
 (defn visibility-status-button [on-press props]
-  (let [{:keys [status-type]} (<sub [:multiaccount/current-user-visibility-status])
-        status-type           (if (nil? status-type)
+  (let [logged-in?            (<sub [:multiaccount/logged-in?])
+        {:keys [status-type]} (<sub [:multiaccount/current-user-visibility-status])
+        status-type           (if (and logged-in? (nil? status-type))
                                 (do
                                   (dispatch-visibility-status-update
                                    constants/visibility-status-automatic)
@@ -62,6 +63,7 @@
 ;; === Code Related to visibility-status-popover ===
 (def scale (anim/create-value 0))
 (def position (anim/create-value 0))
+(def alpha-value (anim/create-value 0))
 
 (defn hide-options []
   (anim/start
@@ -71,7 +73,10 @@
                          :useNativeDriver true})
      (anim/timing position {:toValue         50
                             :duration        210
-                            :useNativeDriver true})])))
+                            :useNativeDriver true})
+     (anim/timing alpha-value {:toValue         0
+                               :duration        200
+                               :useNativeDriver true})])))
 
 (defn show-options []
   (anim/start
@@ -81,7 +86,10 @@
                          :useNativeDriver true})
      (anim/timing position {:toValue         80
                             :duration        70
-                            :useNativeDriver true})])))
+                            :useNativeDriver true})
+     (anim/timing alpha-value {:toValue         0.4
+                               :duration        200
+                               :useNativeDriver true})])))
 
 (defn status-option-pressed [request-close status-type]
   (request-close)
@@ -119,7 +127,7 @@
      {:status-type   constants/visibility-status-automatic
       :request-close request-close}]]])
 
-(defn popover-view [_]
+(defn popover-view [_ window-height]
   (let [clear-timeout     (atom nil)
         current-popover   (reagent/atom nil)
         update?           (reagent/atom nil)
@@ -172,16 +180,21 @@
       (fn []
         (when @current-popover
           (let [{:keys [top]} @current-popover]
-            [react/view styles/visibility-status-popover-view
+            [react/view
+             {:style (styles/visibility-status-popover-container)}
              (when platform/ios?
-               [react/view
-                {:style {:flex 1
-                         :background-color colors/black-persist}}])
-             [react/touchable-highlight
-              {:style {:flex 1}
-               :on-press request-close}
-              [visibility-status-options request-close top]]])))})))
+               [react/animated-view
+                {:style (styles/visibility-status-popover-ios-backdrop
+                         alpha-value)}])
+             [react/view
+              {:style (styles/visibility-status-popover-child-container
+                       window-height)}
+              [react/touchable-highlight
+               {:style {:flex 1}
+                :on-press request-close}
+               [visibility-status-options request-close top]]]])))})))
 
 (views/defview visibility-status-popover []
-  (views/letsubs [popover [:visibility-status-popover/popover]]
-    [popover-view popover]))
+  (views/letsubs [popover [:visibility-status-popover/popover]
+                  {window-height :height} [:dimensions/window]]
+    [popover-view popover window-height]))

@@ -57,9 +57,20 @@
    :transform               [{:scaleY scale}
                              {:translateY position}]})
 
-(def visibility-status-popover-view
+(defn visibility-status-popover-container []
   {:position :absolute
    :top      0
    :bottom   0
    :left     0
    :right    0})
+
+(defn visibility-status-popover-ios-backdrop [alpha-value]
+  {:flex             1
+   :background-color colors/black-persist
+   :opacity          alpha-value})
+
+(defn visibility-status-popover-child-container [window-height]
+  {:position  :absolute
+   :height    window-height
+   :left      0
+   :right     0})
